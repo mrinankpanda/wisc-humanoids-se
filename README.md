@@ -2,8 +2,8 @@
 Mujoco implementation of the IEKF
 
 ## Libraries
-1. (Pinnochio)[https://stack-of-tasks.github.io/pinocchio/]
-2. (Mujoco)[https://mujoco.readthedocs.io/en/stable/overview.html]
+1. [Pinnochio](https://stack-of-tasks.github.io/pinocchio/)
+2. [Mujoco](https://mujoco.readthedocs.io/en/stable/overview.html)
 3. Numpy
 
 ## Tips on setting up reproducibility

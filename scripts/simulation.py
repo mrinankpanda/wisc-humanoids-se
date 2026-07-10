@@ -56,9 +56,8 @@ class Simulator:
 
     def _init_states(self):
         state = RobotState()
-        rot = Rotation(self.data.qpos[3:7], scalar_first=True)
-        np
-        state.X = state.make_state(
+        rot = Rotation.from_quat(self.data.qpos[3:7], scalar_first=True)   # was: Rotation(...)
+        state.X = state.make_state(                                        # deleted stray "np" line
             R=rot.as_matrix(),
             v=self.data.qvel[:3],
             p=self.data.qpos[:3],
@@ -67,7 +66,6 @@ class Simulator:
         )
         state.P = np.eye(15) * 0.01**2
         state.P[3:6, 3:6] = np.eye(3) * 0.1**2
-
         return state
 
     def step(self, i: int):
@@ -100,47 +98,72 @@ class Simulator:
     def run(self):
         """Run the full simulation duration."""
         steps = self.motion_data["joint_pos"].shape[0]
-
-        # Initialize the setup
         state = self._init_states()
 
-        if self.show_viewer:
-            with mujoco.viewer.launch_passive(self.model, self.data) as viewer:
-                viewer.cam.type = mujoco.mjtCamera.mjCAMERA_TRACKING
-                viewer.cam.trackbodyid = 1  # Base body of the robot
-                viewer.cam.distance = 3.0  # Optional: adjust zoom distance
-                viewer.cam.lookat[2] = 1.0  # Optional: look slightly higher
+        viewer_cm = (
+            mujoco.viewer.launch_passive(self.model, self.data)
+            if self.show_viewer else None
+        )
 
-                for i in range(steps):
-                    # Measure everything else
-                    state = self.estimate_state(state)
+        if viewer_cm is not None:
+            viewer = viewer_cm.__enter__()
+            viewer.cam.type = mujoco.mjtCamera.mjCAMERA_TRACKING
+            viewer.cam.trackbodyid = 1
+            viewer.cam.distance = 3.0
+            viewer.cam.lookat[2] = 1.0
 
-                    # Now save estimated state from IEKF and mujoco for comparison
-                    self.measurement_data["actual_body_pos"].append(self.data.qpos[:3])
-                    self.measurement_data["actual_body_vel"].append(self.data.qvel[:3])
-                    self.measurement_data["actual_body_ort"].append(self.data.qpos[3:7])
+        for i in range(steps):
 
-                    R, v, p, _, _ = state.unpack_state()
-                    rot = Rotation.from_matrix(R)
-                    self.measurement_data["est_body_pos"].append(p)
-                    self.measurement_data["est_body_vel"].append(v)
-                    self.measurement_data["est_body_ort"].append(
-                        rot.as_quat(scalar_first=True)
-                    )
+            # Load frame i into MuJoCo
+            self.step(i)
 
-                    self.step(i)
+            # Run estimator on current sensor readings
+            state = self.estimate_state(state)
 
-                    if viewer.is_running():
-                        viewer.sync()
+            # Save ground truth
+            self.measurement_data["actual_body_pos"].append(
+                self.data.qpos[:3].copy()
+            )
+            self.measurement_data["actual_body_vel"].append(
+                self.data.qvel[:3].copy()
+            )
+            self.measurement_data["actual_body_ort"].append(
+                self.data.qpos[3:7].copy()
+            )
 
-                    time.sleep(0.02)
+            # Save estimate
+            R, v, p, _, _ = state.unpack_state()
+            rot = Rotation.from_matrix(R)
 
-                for key in self.measurement_data.keys():
-                    self.measurement_data[key] = np.stack(self.measurement_data[key])
+            self.measurement_data["est_body_pos"].append(
+                p.copy()
+            )
+            self.measurement_data["est_body_vel"].append(
+                v.copy()
+            )
+            self.measurement_data["est_body_ort"].append(
+                rot.as_quat(scalar_first=True).copy()
+            )
 
-                if not os.path.exists("results"):
-                    os.makedirs("results")
-                np.savez("results/dancing.npz", **self.measurement_data)
+            if viewer_cm is not None:
+                if viewer.is_running():
+                    viewer.sync()
+                time.sleep(0.02)
+
+        if viewer_cm is not None:
+            viewer_cm.__exit__(None, None, None)
+
+        for key in self.measurement_data.keys():
+            self.measurement_data[key] = np.stack(
+                self.measurement_data[key]
+            )
+
+        os.makedirs("results", exist_ok=True)
+
+        np.savez(
+            "results/dancing.npz",
+            **self.measurement_data
+        )
 
     def _should_stop(self) -> bool:
         """Check if simulation should terminate (e.g., end of motion data)."""

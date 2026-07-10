@@ -167,6 +167,7 @@ class RIEKF:
         phi[3:6, 0:3] = skew(self.g) * self.dt
         phi[6:9, 0:3] = 0.5 * skew(self.g) * self.dt**2
         phi[6:9, 3:6] = np.eye(3) * self.dt
+        return phi
 
     def compute_F(self, dt):
         F = np.eye(15)
