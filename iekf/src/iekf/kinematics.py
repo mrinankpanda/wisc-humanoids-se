@@ -9,7 +9,7 @@ class ForwardKinematics:
         self.data = robot.data
 
         self.left_foot_id = self.model.getFrameId(self.LEFT_FOOT_FRAME)
-        self.right_foot_id = self.model.getFrameId(self.LEFT_FOOT_FRAME)
+        self.right_foot_id = self.model.getFrameId(self.RIGHT_FOOT_FRAME)
 
         self.nq = self.model.nq  # configuration dimension
         self.nv = self.model.nv  # velocity dimension (num DOF)

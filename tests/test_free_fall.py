@@ -9,8 +9,8 @@ Verifies that dynamics propagation matches analytical free-fall trajectory.
 
 import numpy as np
 
-from humanoid.se.iekf.dynamics import IEKFDynamics
-from humanoid.se.iekf.types import IMUMeasurement, NoiseParams
+from iekf.dynamics import IEKFDynamics
+from iekf.utils.types import IMUMeasurement, NoiseParams
 
 
 def test_free_fall():
