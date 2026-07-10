@@ -11,20 +11,12 @@ used by the correction tests.
 
 import numpy as np
 
-from whse.iekf.contact_bias_iekf import (
-    ContactBiasIEKF,
-    ContactBiasState,
-    IDX_PHI,
-    IDX_V,
-    IDX_P,
-    IDX_DL,
-    IDX_DR,
-    IDX_BL,
-    IDX_BR,
-    DIM_ERR,
+from iekf.contact_bias_iekf import (
+    ContactBiasIEKF, ContactBiasState, IDX_PHI, IDX_V, IDX_P,
+    IDX_DL, IDX_DR, IDX_BL, IDX_BR, DIM_ERR,
 )
-from whse.iekf.lie_group import sek3_exp, so3_exp, skew
-from whse.iekf.types import IMUMeasurement, NoiseParams
+from iekf.utils.lie_group import sek3_exp, so3_exp, skew
+from iekf.utils.types import IMUMeasurement, NoiseParams
 
 
 def right_invariant_correct(iekf, state, y_fk_body, foot="left", N=None):

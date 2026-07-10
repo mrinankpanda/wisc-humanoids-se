@@ -13,6 +13,7 @@ class NoiseParams:
     gyro_cov: np.ndarray = field(default_factory=lambda: np.eye(3) * 0.01**2)
     accel_cov: np.ndarray = field(default_factory=lambda: np.eye(3) * 0.1**2)
     contact_cov: np.ndarray = field(default_factory=lambda: np.eye(3) * 0.1**2)
+    bias_cov: np.ndarray = field(default_factory=lambda: np.eye(3) * 0.001**2)
 
 
 # Robot State with no bias augmentation
