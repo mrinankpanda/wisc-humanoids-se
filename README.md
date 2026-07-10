@@ -18,3 +18,19 @@ This requires several things:
 2. Forward kinematics via Pinnochio
 3. Writing IEKF via Numpy
 4. Putting it all together and plotting the groundtruth walking vs IEKF
+
+## Progress
+
+**Done:**
+- Right-invariant EKF (`right_invariant.py`) fusing IMU + foot-position 
+  measurements via forward kinematics, propagation + correction on SE_k(3)
+- Contact-bias extension (`contact_bias_iekf.py`) that additionally learns 
+  and corrects for systematic error in foot-position sensing per foot, 
+  with contact-reset handling for new footsteps
+- 18 unit tests covering filter correctness (Jacobians, covariance 
+  stability, orthogonality), physical sanity (free-fall trajectory match), 
+  and edge cases (single-leg support, alternating foot contact)
+
+**Not done yet:**
+- Groundtruth vs. estimate plotting (item 4 above)
+- ROS2 integration
